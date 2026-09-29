@@ -389,14 +389,14 @@ export function Integrity() {
         </article>
       </section>
 
-      {/* Contributor / Source-Level Risk Aggregation (PS 2.2.1 Requirement) */}
+      {/* Contributor / Source-Level Risk Aggregation */}
       <section className={`card ${styles.panel} ${styles.contributorSection}`}>
         <div className={styles.panelTitle}>
           <span>SOURCE & CONTRIBUTOR RISK AGGREGATION</span>
           <span className="tag warning">MULTI-CONTRIBUTOR EVALUATION</span>
         </div>
         <p className="muted">
-          Per Problem Statement 2.2.1, individual sample anomalies are aggregated into a source-level risk profile
+          Individual sample anomalies are aggregated into a source-level risk profile
           to identify compromised data pipelines or malicious external contractors.
         </p>
 
@@ -572,7 +572,7 @@ export function ModelAudit() {
         </article>
       </section>
 
-      {/* Coverage Statement & Attack Classes (PS 2.2.5 Requirement) */}
+      {/* Coverage Statement & Attack Classes */}
       <section className={`card ${styles.panel} ${styles.coverageCard}`}>
         <div className={styles.panelTitle}>
           <span>EXPLICIT ASSURANCE COVERAGE STATEMENT</span>

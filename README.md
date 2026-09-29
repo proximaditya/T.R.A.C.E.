@@ -1,7 +1,7 @@
 # T.R.A.C.E. (Tamper-Proof Record & AI Compliance Engine)
 ### Trustworthy Computer Vision Integrity Assurance for Data, Models, and Inference Outputs in Multi-Contributor Pipelines
 
-[![Problem Statement](https://img.shields.io/badge/MoD%20%2F%20Indian%20Army-Problem%20Statement%2026228-amber.svg)](https://github.com/proximaditya/T.R.A.C.E.)
+[![MoD / Indian Army](https://img.shields.io/badge/MoD%20%2F%20Indian%20Army-AI%20Assurance%20Framework-amber.svg)](https://github.com/proximaditya/T.R.A.C.E.)
 [![Security Standard](https://img.shields.io/badge/Security-Zero--Trust%20Air--Gapped-green.svg)](https://github.com/proximaditya/T.R.A.C.E.)
 [![Cryptography](https://img.shields.io/badge/Cryptography-ECDSA%20SECP256k1-blue.svg)](https://github.com/proximaditya/T.R.A.C.E.)
 [![Framework](https://img.shields.io/badge/Frontend-Next.js%2015%20%7C%20React%2019-orange.svg)](https://github.com/proximaditya/T.R.A.C.E.)
@@ -14,7 +14,7 @@
 
 ## 🛡️ Project Overview
 
-**T.R.A.C.E.** is an enterprise-grade AI security and cryptographic compliance platform engineered for the **Ministry of Defence (MoD)** and the **Indian Army (DGIS)** under **Problem Statement 26228**.
+**T.R.A.C.E.** is an enterprise-grade AI security and cryptographic compliance platform engineered for the **Ministry of Defence (MoD)** and the **Indian Army (DGIS)** for sovereign defense intelligence pipelines.
 
 Operational computer vision systems in sovereign intelligence environments combine training data from multiple contributors, vendor-supplied pretrained models, and live battlefield inference outputs consumed by downstream fire-control and intelligence systems. Existing controls address only isolated fragments of this pipeline.
 
@@ -22,9 +22,9 @@ Operational computer vision systems in sovereign intelligence environments combi
 
 ---
 
-## 🚀 Key Capabilities (PS 2.2)
+## 🚀 Key Capabilities
 
-### 1. Training-Data Integrity & Contributor Risk (PS 2.2.1)
+### 1. Training-Data Integrity & Contributor Risk
 * **DailyBench / FPD Forensic Engine:** Dual-pathway pre-ingestion screening for **COCO** and **YOLO** dataset manifests.
 * **Near-Duplicate Poison Flooding:** Evaluates perceptual hash Hamming distances (`imagehash.phash`) to detect poison clustering and duplicate insertion attacks.
 * **Dual-Pathway Semantic Scanner:** Scikit-Learn `IsolationForest` on high-dimensional sensor noise entropy and spatial boundary gradient kurtosis.
@@ -35,22 +35,22 @@ Operational computer vision systems in sovereign intelligence environments combi
   * `[FLAGGED: DUPLICATE FLOOD]` — Perceptual hash collision indicating poison flooding.
 * **Multi-Contributor Risk Aggregation:** Aggregates sample anomalies into source-level risk profiles (`FIELD_UNIT_NORTH`, `EXTERNAL_VENDOR_SIGINT`, `CONTRACTOR_GEO_03`), recommending actionable dispositions (`ACCEPT`, `ENHANCED MONITORING`, `SUSPEND CONTRIBUTOR`).
 
-### 2. Model Integrity & Backdoor Audit (PS 2.2.2)
+### 2. Model Integrity & Backdoor Audit
 * **Format Agnostic:** Natively ingests **ONNX** and **PyTorch/TorchScript** models.
 * **White-Box Structural Audit:**
   * Weight distribution anomaly radar visualization (**2.8% variance** vs Gaussian baseline).
   * Spectral trigger probe (**97%**), Neural cleanse response (**100%**), Activation clustering (**94%**), and WaNet elastic warp resistance (**98%**).
 * **Black-Box Behavioral Fallback:** Graceful fallback to NIST TrojAI reference query batteries when internal weights are restricted.
 
-### 3. Inference Provenance & Output Integrity (PS 2.2.3)
+### 3. Inference Provenance & Output Integrity
 * **Cryptographic Attestation:** Uses **ECDSA (SECP256k1)** and **SHA-256** content addressability.
 * **Immutable Binding:** Links the sensor input image hash, model weight digest, inference output, UTC timestamp, and anti-replay nonce into a canonical payload.
 * **Interactive Tamper Simulation:** Real-time demonstration where modifying the inference output triggers an immediate **`[TAMPERED: SIGNATURE MISMATCH]`** incident banner and isolates the record.
 
-### 4. Distribution-Shift & Anomaly Assessment (PS 2.2.4)
+### 4. Distribution-Shift & Anomaly Assessment
 * Distinguishes natural operational drift (seasonal, terrain, sensor degradation) from malicious adversarial manipulation with calibrated confidence metrics.
 
-### 5. Analyst-Facing Assurance & Governance (PS 2.2.5)
+### 5. Analyst-Facing Assurance & Governance
 * Generates evidence-based human-readable reports stating confidence, affected assets, and recommended dispositions (`ACCEPT`, `REVIEW`, `QUARANTINE`).
 * Maintains an immutable, tamper-evident audit ledger and explicitly declares supported vs unsupported attack classes.
 
@@ -189,4 +189,4 @@ print("Clean count:", scan["clean_count"], "| Quarantined:", scan["quarantine_co
 ## 📄 License
 
 This project is licensed under the terms of the [MIT License](LICENSE).
-Designed for the **Ministry of Defence (MoD)** and **Indian Army (DGIS)** — Problem Statement 26228.
+Designed for the **Ministry of Defence (MoD)** and **Indian Army (DGIS)** AI Assurance.

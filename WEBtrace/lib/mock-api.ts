@@ -114,7 +114,7 @@ export const traceApi = {
     };
 
     const fallback: DatasetScanResult = {
-      scan_id: "FPD-SCAN-26228-B4",
+      scan_id: "FPD-SCAN-SOV-B4",
       dataset_name: datasetName,
       total_samples: 12480,
       clean_count: 12267,

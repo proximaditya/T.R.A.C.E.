@@ -103,7 +103,7 @@ export function CommandShell({ children }: { children: React.ReactNode }) {
 
           <span className={styles.classificationTag}>
             <span className={styles.classificationDot} />
-            DGIS // RESTRICTED // PS-26228
+            DGIS // RESTRICTED // SOVEREIGN-C2
           </span>
         </div>
 

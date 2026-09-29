@@ -1,7 +1,7 @@
 """
 T.R.A.C.E. (Tamper-Proof Record and AI Compliance Engine) SDK
 Trusted AI. Verified Intelligence. Zero-Trust Provenance.
-Designed for Ministry of Defence (MoD) / Indian Army (DGIS) - Problem Statement 26228.
+Designed for Ministry of Defence (MoD) / Indian Army (DGIS) AI Assurance.
 """
 
 from .cryptography import ProvenanceBinder

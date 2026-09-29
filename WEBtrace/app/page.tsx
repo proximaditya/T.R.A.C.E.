@@ -138,7 +138,7 @@ export default function Home() {
           </Link>
           <span className={styles.navClassification}>
             <span className={styles.navDot} />
-            DGIS // RESTRICTED // PS-26228
+            DGIS // RESTRICTED // SOVEREIGN-C2
           </span>
         </div>
 
@@ -424,7 +424,7 @@ export default function Home() {
             T.<span>R.A.C.E.</span>
           </span>
           <p className="mono muted">TAMPER-PROOF RECORD AND AI COMPLIANCE ENGINE</p>
-          <small className="muted">Designed for Indian Army (DGIS) & Ministry of Defence (MoD) • Problem Statement 26228</small>
+          <small className="muted">Designed for Indian Army (DGIS) & Ministry of Defence (MoD) • Sovereign AI Assurance</small>
         </div>
 
         <div className={styles.footerNavGroup}>

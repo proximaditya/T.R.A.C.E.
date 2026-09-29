@@ -1,7 +1,7 @@
 """
 T.R.A.C.E. (Tamper-Proof Record and AI Compliance Engine)
 Cryptographic Backend & AI Assurance API Server
-Designed for Ministry of Defence (MoD) / Indian Army (DGIS) - Problem Statement 26228.
+Designed for Ministry of Defence (MoD) / Indian Army (DGIS) AI Assurance.
 """
 
 import os
