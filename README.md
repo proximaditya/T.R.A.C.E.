@@ -144,20 +144,48 @@ python run_server.py
 * **API Documentation (Swagger UI):** `http://127.0.0.1:8000/docs`
 * **Health Check:** `http://127.0.0.1:8000/api/v1/health`
 
-### 3. Using the Python SDK Directly
-```python
-from trace import ProvenanceBinder, FakePreferenceDetector
+### 3. Using the Python SDK & Interactive Terminal CLI
 
-# 1. Cryptographic Binding
+#### ⚡ 1-Line Installation (For anyone / any terminal):
+```bash
+pip install git+https://github.com/proximaditya/T.R.A.C.E.git#subdirectory=sdk
+```
+
+#### 🖥️ Interactive Terminal Commands:
+Once installed, anyone can run the interactive CLI directly from their terminal:
+```bash
+# 1. View complete interactive guide & code cheatsheet
+trace-ai guide
+# (or: python -m trace_engine guide)
+
+# 2. Run live 3-pillar interactive demo in terminal
+trace-ai demo
+# (or: python -m trace_engine demo)
+
+# 3. Cryptographically bind an inference output with ECDSA SECP256k1
+trace-ai bind --object "T-90 Tank" --confidence 98.4
+
+# 4. Audit model weights & Trojan backdoor resistance
+trace-ai audit --model "YOLOv8-Drone-Detect.onnx" --access-level white_box
+
+# 5. Scan dataset manifest for duplicate flooding & anomalies
+trace-ai scan --dataset "COCO-DRONE-01"
+```
+
+#### 🐍 Python Library Usage:
+```python
+from trace_engine import ProvenanceBinder, FakePreferenceDetector, ModelAuditor
+
+# 1. Cryptographic Provenance Binding (ECDSA SECP256k1)
 binder = ProvenanceBinder()
 binding = binder.bind_inference(
     image_input="surveillance_frame_01.jpg",
     model_hash="7a91f01c9b4e321ad8f1027c9b8841a2e4d00f4a819b9c03fa9128574921bdf6",
-    inference_data={"object": "T-90 Main Battle Tank", "confidence": 98.4},
+    inference_data={"object": "T-90 Main Battle Tank", "confidence": 0.984},
 )
 print("ECDSA SECP256k1 Signature:", binding["signature"])
 
-# 2. Tamper Verification
+# 2. Tamper Verification & Nonce Validation
 verification = ProvenanceBinder.verify_provenance(
     binding["canonical_payload"],
     binding["signature"],
@@ -165,10 +193,15 @@ verification = ProvenanceBinder.verify_provenance(
 )
 print("Integrity Status:", verification["status"])  # [ECDSA SIGNATURE VERIFIED]
 
-# 3. FPD Dataset Screening
+# 3. FPD Dataset Forensic Screening
 detector = FakePreferenceDetector()
 scan = detector.scan_dataset(["frame_01.jpg", "frame_02_synth.jpg", "frame_03_dup.jpg"])
 print("Clean count:", scan["clean_count"], "| Quarantined:", scan["quarantine_count"])
+
+# 4. Model Weight & Backdoor Audit
+auditor = ModelAuditor()
+audit = auditor.audit_model("YOLOv8-Drone-Detect.onnx", access_level="white_box")
+print("Model Integrity:", audit["integrity_status"])
 ```
 
 ---

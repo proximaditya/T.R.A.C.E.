@@ -13,5 +13,12 @@ setup(
         "Pillow>=10.0.0",
         "numpy>=1.24.0",
     ],
+    entry_points={
+        "console_scripts": [
+            "trace-ai=trace_engine.cli:main",
+            "trace-cli=trace_engine.cli:main",
+            "vision-shield=trace_engine.cli:main",
+        ],
+    },
     python_requires=">=3.9",
 )
