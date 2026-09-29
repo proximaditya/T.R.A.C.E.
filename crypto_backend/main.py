@@ -20,11 +20,9 @@ if sdk_path not in sys.path:
     sys.path.insert(0, sdk_path)
 
 try:
-    from trace.cryptography import ProvenanceBinder
-    from trace.fpd_scanner import FakePreferenceDetector
+    from trace_engine import ProvenanceBinder, FakePreferenceDetector, ModelAuditor
 except ImportError:
-    from vision_shield.cryptography import ProvenanceBinder
-    from vision_shield.fpd_scanner import FakePreferenceDetector
+    from vision_shield import ProvenanceBinder, FakePreferenceDetector, ModelAuditor
 
 
 app = FastAPI(
