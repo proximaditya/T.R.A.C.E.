@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd WEBtrace && npm install && npm run build",
-  "outputDirectory": "WEBtrace/.next",
-  "installCommand": "cd WEBtrace && npm install",
-  "framework": "nextjs"
-}

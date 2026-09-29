@@ -98,18 +98,19 @@ T.R.A.C.E./
 
 ## ⚡ Deployment on Vercel
 
-The web application is pre-configured for one-click deployment on **Vercel**:
+To deploy the **T.R.A.C.E.** Command Center on **Vercel**:
 
-### Option 1: Automatic Monorepo Deployment
-1. Connect your GitHub repository (`proximaditya/T.R.A.C.E.`) in the [Vercel Dashboard](https://vercel.com/new).
-2. The root [`vercel.json`](vercel.json) and [`package.json`](package.json) automatically handle dependency installation and build forwarding for `WEBtrace`.
-3. Click **Deploy**.
+1. Go to **[vercel.com/new](https://vercel.com/new)** and import **`proximaditya/T.R.A.C.E.`**.
+2. In the **Configure Project** screen, click **Edit** next to **Root Directory**.
+3. Select **`WEBtrace`** and click **Continue**.
+4. Vercel will automatically detect **Next.js** with zero additional configuration needed.
+5. Click **Deploy**!
 
-### Option 2: Deploying with Root Directory Setting
-1. When importing the repository on Vercel, click **Edit** next to **Root Directory**.
-2. Select `WEBtrace`.
-3. Vercel will automatically detect **Next.js**.
-4. Click **Deploy**.
+> 💡 **Fixing Existing Vercel Project:**
+> If you already created the project in Vercel:
+> 1. Go to your project on Vercel: **Settings** → **General**.
+> 2. Find **Root Directory**, click **Edit**, enter **`WEBtrace`**, and click **Save**.
+> 3. Go to **Deployments** and click **Redeploy** (or push a new commit to trigger automatic deployment).
 
 ---
 
