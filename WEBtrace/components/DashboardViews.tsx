@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -26,6 +26,12 @@ import {
   Zap,
 } from "lucide-react";
 import { traceApi, DatasetScanResult, ModelAuditResult, SecureInferenceRecord } from "@/lib/mock-api";
+import {
+  sha256Hex,
+  analyzeImageData,
+  canonicalJson,
+  verifyInferenceCryptographic,
+} from "@/lib/provenance-crypto";
 import styles from "./DashboardViews.module.css";
 
 // Reusable Stat Card Component
@@ -303,6 +309,19 @@ const sampleImages = [
 export function Integrity() {
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<DatasetScanResult | null>(null);
+  const [analyzingFile, setAnalyzingFile] = useState(false);
+  const [userImages, setUserImages] = useState<Array<{
+    name: string;
+    url: string;
+    status: string;
+    sha: string;
+    reason: string;
+    entropy: number;
+    gradient: number;
+    dhash: string;
+    isUserUploaded?: boolean;
+  }>>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const runScan = async () => {
     setScanning(true);
@@ -314,6 +333,65 @@ export function Integrity() {
       // Handled by client fallback
     } finally {
       setScanning(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAnalyzingFile(true);
+    try {
+      const buffer = await file.arrayBuffer();
+      const sha = await sha256Hex(buffer);
+      const url = URL.createObjectURL(file);
+
+      const img = new Image();
+      img.src = url;
+      await new Promise((resolve) => {
+        img.onload = resolve;
+      });
+
+      const maxDim = 256;
+      let w = img.width;
+      let h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) {
+          h = Math.round((h * maxDim) / w);
+          w = maxDim;
+        } else {
+          w = Math.round((w * maxDim) / h);
+          h = maxDim;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, w, h);
+        const imgData = ctx.getImageData(0, 0, w, h);
+        const analysis = analyzeImageData(imgData.data, w, h);
+        setUserImages((prev) => [
+          {
+            name: file.name,
+            url,
+            status: analysis.verdict,
+            sha: sha.slice(0, 16),
+            reason: `${analysis.reason} (Entropy: ${analysis.entropy} bits/px, Gradient: ${analysis.edgeGradient}, dHash: ${analysis.dhash})`,
+            entropy: analysis.entropy,
+            gradient: analysis.edgeGradient,
+            dhash: analysis.dhash,
+            isUserUploaded: true,
+          },
+          ...prev,
+        ]);
+      }
+    } catch (err) {
+      console.error("Forensic analysis failed:", err);
+    } finally {
+      setAnalyzingFile(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -329,9 +407,9 @@ export function Integrity() {
         {/* Upload Manifest Card */}
         <article className={`card ${styles.uploadCard}`}>
           <UploadCloud size={38} className={styles.uploadIcon} />
-          <h3>Submit CV Dataset Manifest</h3>
+          <h3>Submit CV Dataset Manifest or Inspect Image</h3>
           <p className="muted">
-            Ingest COCO JSON annotations, YOLO TXT labels, or raw frame archives (max 50 GB air-gapped stream).
+            Ingest COCO / YOLO manifests or upload any individual frame (JPG/PNG) to execute live client-side Shannon noise entropy, spatial gradient energy, and dHash.
           </p>
           <div className={styles.uploadActions}>
             <button className="btn" onClick={runScan} disabled={scanning}>
@@ -344,7 +422,22 @@ export function Integrity() {
                 "Scan Dataset Package"
               )}
             </button>
-            <span className={styles.manifestFormatTag}>FORMAT: COCO / YOLOv8</span>
+            <button
+              type="button"
+              className="btn secondary"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={analyzingFile}
+            >
+              {analyzingFile ? "Analyzing Pixels..." : "Upload & Analyze Image"}
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              accept="image/*"
+              className={styles.fileInputHidden}
+            />
+            <span className={styles.manifestFormatTag}>FORMAT: JPG / PNG / COCO</span>
           </div>
         </article>
 
@@ -352,24 +445,26 @@ export function Integrity() {
         <article className={`card ${styles.panel}`}>
           <div className={styles.panelTitle}>
             <span>FPD SCAN TELEMETRY</span>
-            <span className={`tag ${scanResult ? "verified" : "warning"}`}>
-              {scanning ? "ANALYZING DUAL PATHWAY" : scanResult ? "SCAN COMPLETE" : "AWAITING MANIFEST"}
+            <span className={`tag ${scanResult || userImages.length > 0 ? "verified" : "warning"}`}>
+              {scanning ? "ANALYZING DUAL PATHWAY" : scanResult || userImages.length > 0 ? "SCAN COMPLETE" : "AWAITING MANIFEST"}
             </span>
           </div>
 
           <div className={styles.progressContainer}>
             <div
               className={styles.progressBar}
-              style={{ width: scanning ? "72%" : scanResult ? "100%" : "0%" }}
+              style={{ width: scanning ? "72%" : scanResult || userImages.length > 0 ? "100%" : "0%" }}
             />
           </div>
 
           <p className="mono muted">
             {scanning
               ? "Scanning spatial gradients, pHash collisions, and IsolationForest feature anomalies..."
+              : userImages.length > 0
+              ? `LIVE ANALYZED: ${userImages.length} user artifact(s) evaluated via client-side WebCrypto & Canvas.`
               : scanResult
               ? `COMPLETED // MANIFEST ID: ${scanResult.scan_id}`
-              : "Ready. Click 'Scan Dataset Package' to run dual-pathway detection."}
+              : "Ready. Click 'Scan Dataset Package' or 'Upload & Analyze Image' to run forensic detection."}
           </p>
 
           <div className={styles.miniStatsRow}>
@@ -429,10 +524,45 @@ export function Integrity() {
       <section className={styles.inspectionSection}>
         <div className={styles.panelTitle}>
           <span>IMAGE INSPECTION FORENSIC GRID</span>
-          <span className="mono muted">DATASET: COCO-DRONE-SEP-26 // SAMPLES</span>
+          <span className="mono muted">
+            {userImages.length > 0 ? `${userImages.length} LIVE USER SAMPLES LOADED` : "DATASET: COCO-DRONE-SEP-26 // SAMPLES"}
+          </span>
         </div>
 
         <div className={styles.inspectionGrid}>
+          {/* User uploaded artifacts with live pixel analysis */}
+          {userImages.map((sample, i) => (
+            <article key={`user-${i}`} className={`card ${styles.inspectionCard}`}>
+              <div className={styles.imageWrapper}>
+                <img
+                  src={sample.url}
+                  alt={`User Upload ${sample.name}`}
+                  className={styles.inspectionImg}
+                />
+                <span
+                  className={`tag ${
+                    sample.status === "CLEAN"
+                      ? "verified"
+                      : sample.status.includes("QUARANTINE")
+                      ? "danger"
+                      : "warning"
+                  } ${styles.floatingTag}`}
+                >
+                  [{sample.status}]
+                </span>
+              </div>
+              <div className={styles.inspectionDetails}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                  <div className={styles.sampleName}>{sample.name}</div>
+                  <span className={styles.userSampleBadge}>LIVE ANALYZED</span>
+                </div>
+                <div className={styles.sampleReason}>{sample.reason}</div>
+                <div className={styles.sampleDigest}>SHA-256: {sample.sha}…</div>
+              </div>
+            </article>
+          ))}
+
+          {/* Standard reference samples */}
           {sampleImages.map((sample, i) => (
             <article key={i} className={`card ${styles.inspectionCard}`}>
               <div className={styles.imageWrapper}>
@@ -607,33 +737,78 @@ export function ModelAudit() {
 // 4. Live Inference Ledger & Interactive Tamper Simulation
 // -----------------------------------------------------------------------------
 export function Ledger() {
-  const [tampered, setTampered] = useState(false);
-  const [liveRecord, setLiveRecord] = useState<SecureInferenceRecord | null>(null);
+  const ATTESTED_HASH = "41cbf46c0bedf0fa5156ce2bea23081dda261f83c1a16d68a7d0e7d07da7f29a";
+  const ATTESTED_SIGNATURE = "3045022100a7b489f1092e0182947192018471092847109284710298374198273948172902207a918273019284710928471092847109284710928471092847109284";
 
-  useEffect(() => {
-    traceApi.secureInference().then(setLiveRecord);
-  }, []);
-
-  const originalRecord = {
-    object: "T-90 Main Battle Tank",
-    confidence: 98.4,
+  const originalPayload = {
+    algorithm: "ECDSA-SECP256k1-SHA256",
     camera_node: "CAM-DELTA-01",
-    timestamp: "2026-09-29T14:38:42.712Z",
+    confidence: 98.4,
     input_hash: "72d8f4a9ab012c8409e51c89f5bc91238912d7b1e21d749a0231feab892189ac",
     model_hash: "7a91f01c9b4e321ad8f1027c9b8841a2e4d00f4a819b9c03fa9128574921bdf6",
-    signature_algorithm: "ECDSA-SECP256k1",
+    nonce: "8f1a09c4d28e71b5049382716a5c3e90",
+    object: "T-90 Main Battle Tank",
+    timestamp: "2026-09-29T14:38:42.712Z",
+    version: "TRACE-v1.0-MIL",
   };
 
-  const displayedJson = JSON.stringify(
-    {
-      ...originalRecord,
-      confidence: tampered ? 61.2 : originalRecord.confidence,
-      object: tampered ? "Civilian Utility Truck [MUTATED]" : originalRecord.object,
-      tamper_event_detected: tampered,
-    },
-    null,
-    2
-  );
+  const [targetObject, setTargetObject] = useState("T-90 Main Battle Tank");
+  const [confidence, setConfidence] = useState(98.4);
+  const [cameraNode, setCameraNode] = useState("CAM-DELTA-01");
+  const [nonce, setNonce] = useState("8f1a09c4d28e71b5049382716a5c3e90");
+  const [liveDigest, setLiveDigest] = useState(ATTESTED_HASH);
+  const [verificationResult, setVerificationResult] = useState<{
+    valid: boolean;
+    actualHash: string;
+    status: string;
+    reason?: string;
+  }>({
+    valid: true,
+    actualHash: ATTESTED_HASH,
+    status: "[ECDSA SIGNATURE VERIFIED]",
+  });
+
+  const currentPayload = {
+    ...originalPayload,
+    object: targetObject,
+    confidence: Number(confidence),
+    camera_node: cameraNode,
+    nonce,
+  };
+
+  useEffect(() => {
+    let isSubscribed = true;
+    verifyInferenceCryptographic(currentPayload, ATTESTED_SIGNATURE, ATTESTED_HASH).then((res) => {
+      if (isSubscribed) {
+        setLiveDigest(res.actualHash);
+        setVerificationResult(res);
+      }
+    });
+    return () => {
+      isSubscribed = false;
+    };
+  }, [targetObject, confidence, cameraNode, nonce]);
+
+  const isTampered = !verificationResult.valid;
+
+  const injectClassTamper = () => {
+    setTargetObject("Civilian Utility Truck [MUTATED]");
+  };
+
+  const injectConfidenceTamper = () => {
+    setConfidence(38.2);
+  };
+
+  const injectNonceTamper = () => {
+    setNonce("9999ffffdeadbeef0000111122223333");
+  };
+
+  const restoreAttested = () => {
+    setTargetObject("T-90 Main Battle Tank");
+    setConfidence(98.4);
+    setCameraNode("CAM-DELTA-01");
+    setNonce("8f1a09c4d28e71b5049382716a5c3e90");
+  };
 
   return (
     <>
@@ -643,16 +818,16 @@ export function Ledger() {
         copy="Every battlefield computer vision prediction is cryptographically bound to the camera input hash, model weight digest, and signed via ECDSA SECP256k1."
       />
 
-      <section className={`${styles.ledgerWrapper} ${tampered ? styles.tamperActive : ""}`}>
+      <section className={`${styles.ledgerWrapper} ${isTampered ? styles.tamperActive : ""}`}>
         {/* Tamper Incident High-Visibility Banner */}
-        {tampered && (
+        {isTampered && (
           <div className={styles.tamperIncidentBanner}>
             <ShieldAlert size={20} />
             <div>
-              <strong>HIGH-SEVERITY SECURITY INCIDENT: [TAMPERED: SIGNATURE MISMATCH]</strong>
+              <strong>HIGH-SEVERITY SECURITY INCIDENT: [TAMPERED: CRYPTOGRAPHIC HASH MISMATCH]</strong>
               <p>
-                Inference payload was altered post-generation. Output hash mismatch detected against ECDSA SECP256k1
-                attestation. Record isolated and automatic dissemination blocked.
+                Inference payload was altered post-generation. Output digest mismatch detected against sovereign ECDSA attestation.
+                {verificationResult.reason && ` Detail: ${verificationResult.reason}`}
               </p>
             </div>
           </div>
@@ -661,9 +836,9 @@ export function Ledger() {
         <article className={`card ${styles.ledgerCard}`}>
           <div className={styles.panelTitle}>
             <span className={styles.liveHeading}>
-              INFERENCE #INF-9831 <span className={styles.liveTag}>● LIVE AIR-GAPPED STREAM</span>
+              INFERENCE #INF-9831 <span className={styles.liveTag}>● LIVE ZERO-TRUST STREAM</span>
             </span>
-            <span className="mono muted">CAM-DELTA-01 // SECTOR-7</span>
+            <span className="mono muted">{cameraNode} // SECTOR-7</span>
           </div>
 
           <div className={styles.ledgerGrid}>
@@ -675,37 +850,80 @@ export function Ledger() {
                   alt="Drone Surveillance Feed"
                   className={styles.frameImage}
                 />
-                <div className={`${styles.targetBoundingBox} ${tampered ? styles.tamperedBox : ""}`}>
+                <div className={`${styles.targetBoundingBox} ${isTampered ? styles.tamperedBox : ""}`}>
                   <span>
-                    TRACK 07 // {tampered ? "TAMPERED CLASSIFICATION" : "T-90 MBT"}{" "}
-                    <b>{tampered ? "61.2%" : "98.4%"}</b>
+                    TRACK 07 // {targetObject}{" "}
+                    <b>{confidence}%</b>
                   </span>
                 </div>
               </div>
 
-              {/* Interactive Tamper Simulation Button */}
-              <div className={styles.tamperControlRow}>
-                <button
-                  className={`btn ${tampered ? "" : "secondary"}`}
-                  onClick={() => setTampered(!tampered)}
-                >
-                  {tampered ? (
-                    <>
-                      <CheckCircle2 size={15} />
-                      Restore Verified Payload
-                    </>
-                  ) : (
-                    <>
-                      <AlertTriangle size={15} />
-                      Simulate Tampering Attack
-                    </>
-                  )}
-                </button>
-                <span className={styles.tamperHint}>
-                  {tampered
-                    ? "Altered JSON payload triggers immediate signature mismatch alert."
-                    : "Simulates adversary modifying inference confidence or target class."}
-                </span>
+              {/* Interactive Tamper Attack Controls */}
+              <div className={styles.tamperLabSection}>
+                <div className={styles.tamperLabTitle}>
+                  <span>INTERACTIVE PAYLOAD TAMPER LAB</span>
+                  <span>{isTampered ? "⚠ BIT MISMATCH DETECTED" : "✓ ATTESTED KEY MATCH"}</span>
+                </div>
+
+                <div className={styles.tamperInputGrid}>
+                  <div className={styles.tamperField}>
+                    <label>Target Classification</label>
+                    <input
+                      type="text"
+                      value={targetObject}
+                      onChange={(e) => setTargetObject(e.target.value)}
+                      className={styles.tamperInput}
+                    />
+                  </div>
+                  <div className={styles.tamperField}>
+                    <label>Confidence Score (%)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={confidence}
+                      onChange={(e) => setConfidence(parseFloat(e.target.value) || 0)}
+                      className={styles.tamperInput}
+                    />
+                  </div>
+                  <div className={styles.tamperField}>
+                    <label>Sensor Feed Node</label>
+                    <input
+                      type="text"
+                      value={cameraNode}
+                      onChange={(e) => setCameraNode(e.target.value)}
+                      className={styles.tamperInput}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.tamperButtonRow}>
+                  <button type="button" onClick={injectClassTamper} className={styles.attackBtn}>
+                    ⚡ Invert Target Class (T-90 → Civilian Truck)
+                  </button>
+                  <button type="button" onClick={injectConfidenceTamper} className={styles.attackBtn}>
+                    ⚡ Drop Confidence (98.4% → 38.2%)
+                  </button>
+                  <button type="button" onClick={injectNonceTamper} className={styles.attackBtn}>
+                    ⚡ Desync Replay Nonce
+                  </button>
+                  <button type="button" onClick={restoreAttested} className={styles.resetBtn}>
+                    ↺ Restore Attested Record
+                  </button>
+                </div>
+
+                {/* Real-time Hash Comparison Box */}
+                <div className={styles.hashCompareBox}>
+                  <div className={styles.hashRowDynamic}>
+                    <small>ORIGINAL ATTESTED CANONICAL HASH (SECP256k1 ROOT):</small>
+                    <span className={styles.hashMatch}>{ATTESTED_HASH}</span>
+                  </div>
+                  <div className={styles.hashRowDynamic}>
+                    <small>DYNAMIC RECOMPUTED SHA-256 (RFC 8785 CANONICAL JSON):</small>
+                    <span className={isTampered ? styles.hashMismatch : styles.hashMatch}>
+                      {liveDigest} {isTampered ? "← [CORRUPTED: SHA-256 AVALANCHE DIVERGENCE]" : "← [EXACT MATCH]"}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -735,22 +953,26 @@ export function Ledger() {
               <div className={styles.hashList}>
                 <div className={styles.hashRow}>
                   <small>INPUT SENSOR SHA-256</small>
-                  <b>72d8f4a9ab012c8409e51c89f5bc91238912d7b1e21d749a0231feab892189ac</b>
+                  <b>{originalPayload.input_hash}</b>
                 </div>
                 <div className={styles.hashRow}>
                   <small>MODEL WEIGHT SHA-256</small>
-                  <b>7a91f01c9b4e321ad8f1027c9b8841a2e4d00f4a819b9c03fa9128574921bdf6</b>
+                  <b>{originalPayload.model_hash}</b>
                 </div>
                 <div className={styles.hashRow}>
                   <small>TIMESTAMP (UTC)</small>
-                  <b>2026-09-29T14:38:42.712Z</b>
+                  <b>{originalPayload.timestamp}</b>
+                </div>
+                <div className={styles.hashRow}>
+                  <small>NONCE</small>
+                  <b>{nonce}</b>
                 </div>
               </div>
 
               {/* Signature Verification State Tag */}
               <div className={styles.signatureBadgeRow}>
-                <span className={`tag ${tampered ? "danger" : "verified"}`}>
-                  {tampered ? "[TAMPERED: SIGNATURE MISMATCH]" : "[ECDSA SIGNATURE VERIFIED]"}
+                <span className={`tag ${isTampered ? "danger" : "verified"}`}>
+                  {verificationResult.status}
                 </span>
               </div>
             </div>
@@ -759,11 +981,11 @@ export function Ledger() {
           {/* Canonical Payload JSON View */}
           <div className={styles.jsonWrapper}>
             <div className={styles.jsonHeader}>
-              <span>CANONICAL PAYLOAD INSPECTOR</span>
-              <span className="mono muted">{tampered ? "CORRUPTED HASH" : "AUTHENTICATED HASH"}</span>
+              <span>CANONICAL PAYLOAD INSPECTOR (RFC 8785 JSON)</span>
+              <span className="mono muted">{isTampered ? "DIGEST DIVERGENCE" : "AUTHENTICATED HASH"}</span>
             </div>
-            <pre className={`${styles.jsonPre} ${tampered ? styles.jsonTampered : ""}`}>
-              {displayedJson}
+            <pre className={`${styles.jsonPre} ${isTampered ? styles.jsonTampered : ""}`}>
+              {canonicalJson(currentPayload)}
             </pre>
           </div>
         </article>

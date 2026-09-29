@@ -1189,3 +1189,180 @@
     align-items: flex-start;
   }
 }
+
+/* -------------------------------------------------------------------------
+   Interactive Upload Dropzone & Canvas Forensic Tool
+   ------------------------------------------------------------------------- */
+.uploadDropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--line);
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  margin-top: 14px;
+}
+
+.uploadDropzone:hover {
+  border-color: var(--amber);
+  background: rgba(245, 158, 11, 0.06);
+}
+
+.fileInputHidden {
+  display: none;
+}
+
+.userSampleBadge {
+  background: var(--amber-soft);
+  color: var(--amber);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* -------------------------------------------------------------------------
+   Interactive Tamper Lab & Real-Time Crypto Verifier
+   ------------------------------------------------------------------------- */
+.tamperLabSection {
+  margin-top: 18px;
+  padding: 16px;
+  background: var(--surface2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.tamperLabTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--amber);
+}
+
+.tamperInputGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 900px) {
+  .tamperInputGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tamperField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tamperField label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tamperInput {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--text-bright);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.tamperInput:focus {
+  border-color: var(--amber);
+}
+
+.tamperButtonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.attackBtn {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.attackBtn:hover {
+  background: rgba(239, 68, 68, 0.22);
+}
+
+.resetBtn {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.resetBtn:hover {
+  background: rgba(16, 185, 129, 0.22);
+}
+
+.hashCompareBox {
+  margin-top: 14px;
+  padding: 12px;
+  background: #06090e;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hashRowDynamic {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hashRowDynamic small {
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+.hashMatch {
+  color: #34d399;
+  word-break: break-all;
+}
+
+.hashMismatch {
+  color: #f87171;
+  word-break: break-all;
+}

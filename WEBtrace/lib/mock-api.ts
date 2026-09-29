@@ -6,10 +6,12 @@
 const BACKEND_BASE = "http://127.0.0.1:8000";
 
 async function fetchWithFallback<T>(endpoint: string, options: RequestInit, fallbackData: T): Promise<T> {
+  // 1. Try Next.js internal serverless endpoint first (works natively on Vercel & local Next.js)
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1800); // 1.8s timeout
-    const res = await fetch(`${BACKEND_BASE}${endpoint}`, {
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+    const targetUrl = typeof window !== "undefined" ? endpoint : `http://127.0.0.1:8000${endpoint}`;
+    const res = await fetch(targetUrl, {
       ...options,
       signal: controller.signal,
       headers: {
@@ -22,7 +24,21 @@ async function fetchWithFallback<T>(endpoint: string, options: RequestInit, fall
       return (await res.json()) as T;
     }
   } catch {
-    // Backend offline or unreachable - seamlessly fallback to local deterministic assurance data
+    // 2. If relative failed, try external FastAPI port 8000 if running locally
+    try {
+      const res = await fetch(`http://127.0.0.1:8000${endpoint}`, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers || {}),
+        },
+      });
+      if (res.ok) {
+        return (await res.json()) as T;
+      }
+    } catch {
+      // Offline fallback
+    }
   }
   return fallbackData;
 }
